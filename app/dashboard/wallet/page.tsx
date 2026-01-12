@@ -2,7 +2,7 @@ import { getCurrentUser } from "@/lib/session";
 import prisma from "@/lib/prisma";
 import { WalletContent } from "../../components/dashboard/WalletContent";
 
-// Removed force-dynamic - React Query handles freshness
+// //Removed force-dynamic - React Query handles freshness
 // export const dynamic = "force-dynamic";
 
 async function getWalletData() {
