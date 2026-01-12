@@ -1,0 +1,94 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+model User {
+  id        String   @id @default(cuid())
+  email     String   @unique
+  name      String?
+  image     String?  // URL to avatar
+  password  String   // Since we aren't using Clerk anymore, we store a simple password (mock or hashed)
+  role      String   @default("USER") // "USER" | "ADMIN"
+  balance   Decimal  @default(0)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  
+  transactions Transaction[]
+  investments  Investment[]
+  portfolioHistory PortfolioHistory[]
+}
+
+model Transaction {
+  id        String   @id @default(cuid())
+  userId    String
+  type      String   // "DEPOSIT", "WITHDRAWAL", "INVESTMENT", "PROFIT"
+  amount    Decimal
+  currency  String   // "USDT", "BTC", "ETH"
+  network   String?  // "TRC20", "ERC20", "BTC", "SOL", etc.
+  status    String   @default("PENDING") // "PENDING", "COMPLETED", "FAILED"
+  source    String?  // "WALLET" or "investment_id"
+  address   String?  // The address sent to/from
+  txHash    String?  // Optional blockchain hash
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Investment {
+  id        String   @id @default(cuid())
+  userId    String
+  planId    String   // "starter", "growth", "wealth"
+  amount    Decimal
+  status    String   @default("ACTIVE") // "ACTIVE", "COMPLETED", "CANCELLED"
+  startDate DateTime @default(now())
+  endDate   DateTime?
+  profit    Decimal  @default(0)
+  dailyROI  Decimal  @default(0)
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model PortfolioHistory {
+  id            String   @id @default(cuid())
+  userId        String
+  date          DateTime @default(now())
+  totalValue    Decimal  // Total portfolio (wallet + investments + profit)
+  liquidBalance Decimal  // Available wallet balance
+  totalInvested Decimal  // Sum of active investment principals
+  totalProfit   Decimal  // Sum of all investment profits
+  createdAt     DateTime @default(now())
+  
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+  
+  @@unique([userId, date])
+  @@index([userId, date])
+}
+
+model CryptoAsset {
+  id        String    @id @default(cuid())
+  symbol    String    @unique
+  name      String
+  icon      String?   // Store icon name/identifier
+  networks  Network[]
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Network {
+  id             String      @id @default(cuid())
+  name           String
+  icon           String?     // Network logo URL
+  depositAddress String?
+  assetId        String
+  asset          CryptoAsset @relation(fields: [assetId], references: [id])
+  createdAt      DateTime    @default(now())
+  updatedAt      DateTime    @updatedAt
+}
