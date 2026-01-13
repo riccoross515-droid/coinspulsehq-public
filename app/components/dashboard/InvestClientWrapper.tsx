@@ -1,14 +1,20 @@
 "use client";
 
 import { InvestContent, Investment } from "./InvestContent";
-import { useUserData, UserData } from "../../hooks/use-user-data";
+import { useUserData, UserData } from "@/app/hooks/use-user-data";
+
+import { FullPageLoader } from "@/app/components/ui/FullPageLoader";
 
 interface InvestClientWrapperProps {
-  initialData: UserData;
+  initialData?: UserData;
 }
 
 export function InvestClientWrapper({ initialData }: InvestClientWrapperProps) {
-  const { data } = useUserData(initialData);
+  const { data, isLoading } = useUserData(initialData);
+
+  if (isLoading && !data) {
+      return <FullPageLoader />;
+  }
 
   if (!data) return null;
 

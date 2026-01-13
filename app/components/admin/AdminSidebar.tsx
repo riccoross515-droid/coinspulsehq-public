@@ -11,7 +11,7 @@ import {
   Coins,
   Globe
 } from "lucide-react";
-import { Button } from "../ui/Button";
+import { Button } from "@/app/components/ui/Button";
 import { adminLogout } from "@/app/actions/admin";
 
 const adminLinks = [

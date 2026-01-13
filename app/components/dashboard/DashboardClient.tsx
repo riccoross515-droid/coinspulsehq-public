@@ -14,10 +14,11 @@ import {
 import Link from "next/link";
 import { Button } from "../../components/ui/Button";
 import { PerformanceChart } from "../../components/dashboard/PerformanceChart";
-import { useUserData, UserData } from "../../hooks/use-user-data";
+import { useUserData, UserData } from "@/app/hooks/use-user-data";
+import { FullPageLoader } from "@/app/components/ui/FullPageLoader";
 
 interface DashboardClientProps {
-  initialData: UserData;
+  initialData?: UserData;
   userName: string;
   greeting: { text: string; emoji: string };
 }
@@ -27,7 +28,11 @@ export function DashboardClient({
   userName,
   greeting,
 }: DashboardClientProps) {
-  const { data } = useUserData(initialData);
+  const { data, isLoading } = useUserData(initialData);
+
+  if (isLoading && !data) {
+      return <FullPageLoader />;
+  }
 
   if (!data) return null;
 
@@ -70,7 +75,7 @@ export function DashboardClient({
             </div>
           </div>
           <p className="text-xs font-bold uppercase text-muted-foreground tracking-wider mb-1">
-            Total Asset Value
+            Wallet Balance
           </p>
           <h2 className="text-3xl font-black text-foreground">
             ${balance.toLocaleString()}

@@ -3,9 +3,9 @@
 import { useState } from "react";
 import Image from "next/image";
 import { Menu, User } from "lucide-react";
-import { Button } from "../ui/Button";
-import { ThemeToggle } from "../ThemeToggle";
-import { Modal } from "../ui/Modal";
+import { Button } from "@/app/components/ui/Button";
+import { ThemeToggle } from "@/app/components/ThemeToggle";
+import { Modal } from "@/app/components/ui/Modal";
 
 interface DashboardHeaderProps {
   onMenuClick: () => void;

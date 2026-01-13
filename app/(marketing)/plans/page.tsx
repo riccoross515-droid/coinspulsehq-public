@@ -107,7 +107,7 @@ export default function PlansPage() {
                   className="w-full font-bold h-12"
                   size="lg"
               >
-                Start {plan.name} Contract
+                Start {plan.name}
               </Button>
             </Link>
           </Card>

@@ -24,8 +24,10 @@ export function AssetsManager({ initialAssets }: AssetsManagerProps) {
       queryKey: ['assets'],
       queryFn: () => getAssets(),
       initialData: initialAssets,
-      staleTime: 1000 * 60,
-      refetchInterval: 1000 * 60,
+      staleTime: 30 * 1000,
+      refetchInterval: 30 * 1000,
+      refetchOnWindowFocus: true,
+      retry: 3,
   });
 
   const [isAssetModalOpen, setIsAssetModalOpen] = useState(false);

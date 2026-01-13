@@ -1,7 +1,7 @@
 "use client";
 
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
+import { Card } from "@/app/components/ui/Card";
+import { Button } from "@/app/components/ui/Button";
 import { ArrowLeft, Clock, TrendingUp, AlertTriangle, Lock } from "lucide-react";
 import { PerformanceChart } from "./PerformanceChart";
 import { useRouter } from "next/navigation";

@@ -25,8 +25,9 @@ export function useInvestment(id: string, initialData?: InvestmentDetail) {
     queryKey: ["investment", id],
     queryFn: () => fetchInvestment(id),
     initialData,
-    staleTime: 30 * 1000, // 30 seconds
-    refetchOnMount: 'always', // ALWAYS fetch on mount
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
     refetchOnWindowFocus: true,
+    retry: 3,
   });
 }

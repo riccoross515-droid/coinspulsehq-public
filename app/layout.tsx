@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { Poppins } from "next/font/google";
 import "./globals.css";
 import { ThemeProvider } from "./providers";
-import { TawkTo } from "./components/TawkTo";
+
 
 const poppins = Poppins({
   variable: "--font-poppins",
@@ -11,8 +11,8 @@ const poppins = Poppins({
 });
 
 export const metadata: Metadata = {
-  title: "CryptoPulse Digital",
-  description: "Professional Crypto Investment Platform",
+  title: "Coinspulse Mining Network",
+  description: "Institutional Cloud Mining Infrastructure",
 };
 
 export default function RootLayout({
@@ -31,7 +31,7 @@ export default function RootLayout({
           >
           {children}
         </ThemeProvider>
-        <TawkTo />
+
       </body>
     </html>
   );

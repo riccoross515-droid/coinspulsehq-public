@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getCurrentUser } from "@/lib/session";
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -9,9 +10,20 @@ export async function GET() {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
+    const assets = await prisma.cryptoAsset.findMany({
+      include: {
+        networks: true
+      }
+    });
+
     // Return sanitized user data
     return NextResponse.json({
+      name: user.name,
+      email: user.email,
+      image: user.image,
+      role: user.role,
       balance: Number(user.balance),
+      assets: assets,
       transactions: user.transactions.map(tx => ({
         ...tx,
         amount: Number(tx.amount)

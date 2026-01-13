@@ -18,12 +18,19 @@ import {
 } from "lucide-react";
 import { Button } from "../ui/Button";
 
+import { FullPageLoader } from "@/app/components/ui/FullPageLoader";
+
 interface TransactionsClientProps {
-  initialData: UserData;
+  initialData?: UserData;
 }
 
 export function TransactionsClient({ initialData }: TransactionsClientProps) {
-  const { data } = useUserData(initialData);
+  const { data, isLoading } = useUserData(initialData);
+  
+  if (isLoading && !data) {
+      return <FullPageLoader />;
+  }
+
   const transactions = data?.transactions || [];
 
   // Filter States

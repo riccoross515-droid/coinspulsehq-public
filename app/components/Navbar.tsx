@@ -44,7 +44,7 @@ export const Navbar = () => {
           <Link href="/" className="flex items-center gap-2">
             <Coins className="h-8 w-8 text-[#333] dark:text-primary" />
             <span className="text-xl font-bold tracking-tight text-foreground">
-              CryptoPulse
+              Coinspulse
             </span>
           </Link>
 

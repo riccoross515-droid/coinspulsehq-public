@@ -51,6 +51,8 @@ export async function adminLogout() {
   redirect("/");
 }
 
+import { sendDepositConfirmation, sendWithdrawalConfirmation } from "@/lib/email";
+
 /**
  * Confirms a deposit transaction.
  * - Updates transaction status to COMPLETED
@@ -60,6 +62,7 @@ export async function confirmDeposit(transactionId: string) {
   try {
     const transaction = await prisma.transaction.findUnique({
       where: { id: transactionId },
+      include: { user: true }
     });
 
     if (!transaction) return { success: false, error: "Transaction not found" };
@@ -81,6 +84,13 @@ export async function confirmDeposit(transactionId: string) {
         },
       }),
     ]);
+
+    // Send Confirmation Email
+    await sendDepositConfirmation(transaction.user.email, Number(transaction.amount), {
+      txHash: transaction.txHash || transaction.id,
+      asset: transaction.currency || 'USD', // Assuming currency field holds the asset symbol like 'BTC'
+      network: transaction.network || 'N/A'
+    });
 
     revalidatePath("/admin/transactions");
     return { success: true };
@@ -183,6 +193,14 @@ export async function confirmWithdrawal(transactionId: string) {
       ]);
     }
 
+    // Send Confirmation Email
+    await sendWithdrawalConfirmation(transaction.user.email, amount, {
+      txHash: transaction.txHash || transaction.id,
+      asset: transaction.currency || 'USD',
+      network: transaction.network || 'N/A',
+      address: transaction.address || 'N/A'
+    });
+
     revalidatePath("/admin/transactions");
     return { success: true };
   } catch (error) {
@@ -228,7 +246,82 @@ export async function approveTransaction(transactionId: string) {
 }
 
 export async function rejectTransaction(transactionId: string) {
+  const transaction = await prisma.transaction.findUnique({ where: { id: transactionId } });
+  if (!transaction) return { success: false, error: "Transaction not found" };
+  
+  if (transaction.type === "DEPOSIT") {
+      return rejectDeposit(transactionId);
+  } else if (transaction.type === "WITHDRAWAL") {
+      return rejectWithdrawal(transactionId);
+  }
+  
   return failTransaction(transactionId);
+}
+
+export async function rejectWithdrawal(transactionId: string, reason?: string) {
+  try {
+    const transaction = await prisma.transaction.findUnique({
+      where: { id: transactionId },
+      include: { user: true }
+    });
+
+    if (!transaction) return { success: false, error: "Transaction not found" };
+    if (transaction.type !== "WITHDRAWAL") return { success: false, error: "Not a withdrawal" };
+    if (transaction.status !== "PENDING") return { success: false, error: "Transaction not pending" };
+
+    await prisma.transaction.update({
+      where: { id: transactionId },
+      data: { status: "FAILED" }, 
+    });
+
+    // Send Rejection Email
+    const { sendWithdrawalRejection } = await import("@/lib/email");
+    await sendWithdrawalRejection(transaction.user.email, Number(transaction.amount), {
+        asset: transaction.currency || 'USD',
+        network: transaction.network || 'N/A',
+        reason,
+        txHash: transaction.txHash || transaction.id
+    });
+
+    revalidatePath("/admin/transactions");
+    return { success: true };
+  } catch (error) {
+    console.error("Reject Withdrawal Error:", error);
+    return { success: false, error: "Failed to reject withdrawal" };
+  }
+}
+
+export async function rejectDeposit(transactionId: string, reason?: string) {
+    try {
+      const transaction = await prisma.transaction.findUnique({
+        where: { id: transactionId },
+        include: { user: true }
+      });
+  
+      if (!transaction) return { success: false, error: "Transaction not found" };
+      if (transaction.type !== "DEPOSIT") return { success: false, error: "Not a deposit" };
+      if (transaction.status !== "PENDING") return { success: false, error: "Transaction not pending" };
+  
+      await prisma.transaction.update({
+        where: { id: transactionId },
+        data: { status: "FAILED" },
+      });
+
+      // Send Rejection Email
+      const { sendDepositRejection } = await import("@/lib/email");
+      await sendDepositRejection(transaction.user.email, Number(transaction.amount), {
+          asset: transaction.currency || 'USD',
+          network: transaction.network || 'N/A',
+          reason,
+          txHash: transaction.txHash || transaction.id
+      });
+  
+      revalidatePath("/admin/transactions");
+      return { success: true };
+    } catch (error) {
+      console.error("Reject Deposit Error:", error);
+      return { success: false, error: "Failed to reject deposit" };
+    }
 }
 
 export async function deleteTransaction(transactionId: string) {

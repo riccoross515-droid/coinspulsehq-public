@@ -12,24 +12,24 @@ export const Footer = () => {
             <Link href="/" className="flex items-center gap-2">
               <Coins className="h-8 w-8 text-[#333] dark:text-primary" />
               <span className="text-xl font-bold tracking-tight text-foreground">
-                CryptoPulse
+                Coinspulse
               </span>
             </Link>
             <p className="text-muted-foreground text-sm leading-relaxed">
-              The world&apos;s most trusted cryptocurrency investment platform. 
-              Secure, fast, and transparent returns for everyone.
+              The world&apos;s most advanced cloud mining infrastructure. 
+              Secure, high-performance hashing power and transparent rewards for everyone.
             </p>
             <div className="flex gap-4">
-              <a href="#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
+              <a href="/#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
                 <Twitter className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
+              <a href="/#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
                 <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
+              <a href="/#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
                 <Linkedin className="h-5 w-5" />
               </a>
-              <a href="#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
+              <a href="/#" className="text-muted-foreground hover:text-[#333] dark:hover:text-primary transition-colors">
                 <Instagram className="h-5 w-5" />
               </a>
             </div>
@@ -50,10 +50,10 @@ export const Footer = () => {
           <div>
             <h3 className="text-foreground font-bold mb-6">Legal</h3>
             <ul className="space-y-4 text-sm text-muted-foreground">
-              <li><a href="#" className="hover:text-[#333] dark:hover:text-primary transition-colors">Privacy Policy</a></li>
-              <li><a href="#" className="hover:text-[#333] dark:hover:text-primary transition-colors">Terms of Service</a></li>
-              <li><a href="#" className="hover:text-[#333] dark:hover:text-primary transition-colors">AML Policy</a></li>
-              <li><a href="#" className="hover:text-[#333] dark:hover:text-primary transition-colors">Risk Warning</a></li>
+              <li><Link href="/#" className="hover:text-[#333] dark:hover:text-primary transition-colors">Privacy Policy</Link></li>
+              <li><Link href="/#" className="hover:text-[#333] dark:hover:text-primary transition-colors">Terms of Service</Link></li>
+              <li><Link href="/#" className="hover:text-[#333] dark:hover:text-primary transition-colors">AML Policy</Link></li>
+              <li><Link href="/#" className="hover:text-[#333] dark:hover:text-primary transition-colors">Risk Warning</Link></li>
             </ul>
           </div>
 
@@ -77,7 +77,7 @@ export const Footer = () => {
 
         {/* Bottom Bar */}
         <div className="border-t border-border pt-8 text-center text-sm text-muted-foreground">
-          <p>© {new Date().getFullYear()} CryptoPulse Digital. All rights reserved.</p>
+          <p>© {new Date().getFullYear()} Coinspulse Mining Network. All rights reserved.</p>
         </div>
       </div>
     </footer>

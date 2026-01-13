@@ -17,6 +17,7 @@ model User {
   password  String   // Since we aren't using Clerk anymore, we store a simple password (mock or hashed)
   role      String   @default("USER") // "USER" | "ADMIN"
   balance   Decimal  @default(0)
+  isVerified Boolean @default(false)
   createdAt DateTime @default(now())
   updatedAt DateTime @updatedAt
   
@@ -91,4 +92,16 @@ model Network {
   asset          CryptoAsset @relation(fields: [assetId], references: [id])
   createdAt      DateTime    @default(now())
   updatedAt      DateTime    @updatedAt
+}
+
+model Otp {
+  id        String   @id @default(cuid())
+  email     String
+  code      String
+  type      String   // "SIGNUP", "LOGIN", "WITHDRAWAL"
+  expiresAt DateTime
+  used      Boolean  @default(false)
+  createdAt DateTime @default(now())
+
+  @@index([email, type, used])
 }

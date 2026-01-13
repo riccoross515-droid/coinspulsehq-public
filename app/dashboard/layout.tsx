@@ -1,6 +1,6 @@
 import prisma from "@/lib/prisma";
 import { DashboardLayoutClient } from "@/app/components/dashboard/DashboardLayoutClient";
-import AuthProvider from "../components/auth/AuthProvider";
+import AuthProvider from "@/app/components/auth/AuthProvider";
 import { cookies } from "next/headers";
 
 

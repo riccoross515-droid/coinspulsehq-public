@@ -1,8 +1,8 @@
 "use client";
 
-export default function Loading() {
+export function FullPageLoader() {
   return (
-    <div className="min-h-screen w-full flex items-center justify-center bg-background">
+    <div className="flex items-center justify-center w-full min-h-[60vh] animate-in fade-in duration-500">
       <div className="relative flex flex-col items-center">
         {/* Animated Logo */}
         <div className="relative w-32 h-32">

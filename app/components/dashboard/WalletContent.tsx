@@ -1,9 +1,9 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import Link from "next/link";
-import { Card } from "../ui/Card";
-import { Button } from "../ui/Button";
+import { Card } from "@/app/components/ui/Card";
+import { Button } from "@/app/components/ui/Button";
 import { 
   Copy, 
   ArrowUpRight, 
@@ -15,22 +15,25 @@ import {
   Loader2,
   AlertCircle,
   LucideIcon,
-  RefreshCcw
+  RefreshCcw,
+  KeyRound,
+  X 
 } from "lucide-react";
-import { createTransaction, getUserData } from "@/app/actions/user";
+import { createTransaction, initiateWithdrawal, completeWithdrawal } from "@/app/actions/user";
+import OtpInput from "@/app/components/ui/OtpInput";
 import toast from "react-hot-toast";
 
-import { CryptoIcon } from "../ui/CryptoIcon";
+import { CryptoIcon } from "@/app/components/ui/CryptoIcon";
 import { useIsDark } from "@/app/hooks/use-is-dark";
 import { useTheme } from "next-themes";
-import { useQuery } from "@tanstack/react-query";
+import { useUserData } from "@/app/hooks/use-user-data";
 
 // Types
 interface Network {
   id: string;
   name: string;
   depositAddress: string | null;
-  assetId: string;
+  // assetId removed as it's not present in API response
 }
 
 interface CryptoAsset {
@@ -48,12 +51,12 @@ interface Transaction {
   type: string;
   status: string;
   currency: string;
-  network: string | null;
+  network?: string | null;
   address: string | null;
-  txHash: string | null;
-  source: string | null;
+  txHash?: string | null;
+  source?: string | null;
   createdAt: string | Date;
-  updatedAt: string | Date;
+  updatedAt?: string | Date;
 }
 
 interface Investment {
@@ -65,37 +68,51 @@ interface Investment {
   endDate: string | Date | null;
 }
 
+import { FullPageLoader } from "@/app/components/ui/FullPageLoader";
+
+// ... existing imports
+
 interface WalletContentProps {
-  initialData?: {
-      balance: number;
-      transactions: Transaction[];
-      assets: CryptoAsset[];
-      investments: Investment[];
-  };
+  initialData?: any; // Made optional/any since we aren't passing it anymore
 }
 
 export function WalletContent({ initialData }: WalletContentProps) {
   const [activeTab, setActiveTab] = useState<"deposit" | "withdraw">("deposit");
   
-  // Hybrid Fetching
-  const { data, refetch, isFetching } = useQuery({
-      queryKey: ['userData'],
-      queryFn: () => getUserData(),
-      initialData: initialData,
-      staleTime: 1000 * 60,
-      refetchInterval: 1000 * 60,
-  });
-
-  const { balance = 0, transactions = [], assets = [], investments = [] } = data || {};
+  // Client-side Fetching only
+  // Client-side Fetching with Hook
+  const { data, refetch, isFetching, isLoading } = useUserData(initialData);
 
   // Form States
-  const [selectedAsset, setSelectedAsset] = useState<CryptoAsset | null>(assets.length > 0 ? assets[0] : null);
-  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(assets.length > 0 && assets[0].networks.length > 0 ? assets[0].networks[0] : null);
-  const [withdrawalSource, setWithdrawalSource] = useState<string>("wallet"); // 'wallet' or investmentId
+  // Initialize with empty/null if loading
+  const [selectedAsset, setSelectedAsset] = useState<CryptoAsset | null>(null);
+  const [selectedNetwork, setSelectedNetwork] = useState<Network | null>(null);
+  const [withdrawalSource, setWithdrawalSource] = useState<string>("wallet"); 
   const [amount, setAmount] = useState("");
   const [withdrawAddress, setWithdrawAddress] = useState("");
   const [isPending, startTransition] = useTransition();
   const isDarkMode = useIsDark();
+
+  // OTP State
+  const [showWithdrawOTP, setShowWithdrawOTP] = useState(false);
+  const [otp, setOtp] = useState(["", "", "", "", "", ""]);
+  const otpInputRefs = useRef<(HTMLInputElement | null)[]>([]);
+
+  // Effect to set initial asset/network when data loads
+  useEffect(() => {
+     if (data?.assets && data.assets.length > 0 && !selectedAsset) {
+         setSelectedAsset(data.assets[0]);
+         if (data.assets[0].networks && data.assets[0].networks.length > 0) {
+             setSelectedNetwork(data.assets[0].networks[0]);
+         }
+     }
+  }, [data, selectedAsset]);
+
+  if (isLoading && !data) {
+      return <FullPageLoader />;
+  }
+
+  const { balance = 0, transactions = [], assets = [], investments = [] } = data || {};
 
   // Derived state for selected source
   const selectedInvestment = investments.find((inv: Investment) => inv.id === withdrawalSource);
@@ -168,28 +185,115 @@ export function WalletContent({ initialData }: WalletContentProps) {
     }
 
     startTransition(async () => {
-      const result = await createTransaction({
-        amount: parseFloat(amount),
-        type: "WITHDRAWAL",
-        currency: selectedAsset.symbol,
-        network: selectedNetwork?.name || "External",
-        address: withdrawAddress,
-        source: withdrawalSource 
-      });
+        // 1. Initiate Withdrawal (Validate & Send OTP)
+        const result = await initiateWithdrawal({
+            amount: parseFloat(amount),
+            currency: selectedAsset.symbol,
+            network: selectedNetwork?.name || "External",
+            address: withdrawAddress,
+            source: withdrawalSource 
+        });
 
       if (result.success) {
-        toast.success("Withdrawal request submitted! Pending approval.");
-        setAmount("");
-        setWithdrawAddress("");
-        refetch();
+        toast.success("Verification code sent to your email.");
+        setShowWithdrawOTP(true);
+        // Focus first OTP input after a short delay for modal animation
+        setTimeout(() => otpInputRefs.current[0]?.focus(), 100);
       } else {
-        toast.error(result.error || "Failed to submit withdrawal");
+        toast.error(result.error || "Failed to initiate withdrawal");
       }
     });
   };
 
+  const handleWithdrawOtpSubmit = async (code: string) => {
+    // 2. Complete Withdrawal (Verify OTP & Create Tx)
+    startTransition(async () => {
+        const result = await completeWithdrawal({
+            amount: parseFloat(amount),
+            currency: selectedAsset?.symbol || "USD",
+            network: selectedNetwork?.name || "External",
+            address: withdrawAddress,
+            source: withdrawalSource,
+            otp: code
+        });
+
+        if (result.success) {
+            toast.success("Withdrawal request confirmed successfully!");
+            setAmount("");
+            setWithdrawAddress("");
+            setShowWithdrawOTP(false);
+            setOtp(["", "", "", "", "", ""]);
+            refetch();
+        } else {
+            toast.error(result.error || "Verification failed");
+        }
+    });
+  };
+
+  // OTP Input Logic
+  const handleOtpChange = (index: number, value: string) => {
+    if (isNaN(Number(value))) return;
+    const newOtp = [...otp];
+    newOtp[index] = value;
+    setOtp(newOtp);
+
+    if (value && index < 5) {
+      otpInputRefs.current[index + 1]?.focus();
+    }
+  };
+
+  const handleKeyDown = (index: number, e: React.KeyboardEvent) => {
+    if (e.key === "Backspace" && !otp[index] && index > 0) {
+      otpInputRefs.current[index - 1]?.focus();
+    }
+  };
+
   return (
-    <div className="grid gap-8 lg:grid-cols-2">
+    <div className="grid gap-8 lg:grid-cols-2 relative">
+      {/* OTP Modal Overlay */}
+      {showWithdrawOTP && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-background/80 backdrop-blur-sm animate-in fade-in duration-200 p-4">
+            <div className="bg-card border border-border rounded-3xl p-8 shadow-2xl w-full max-w-md relative animate-in zoom-in-95 duration-200">
+                <button 
+                    onClick={() => setShowWithdrawOTP(false)}
+                    className="absolute top-4 right-4 p-2 rounded-full hover:bg-muted/50 transition-colors"
+                >
+                    <X className="h-5 w-5 text-muted-foreground" />
+                </button>
+                
+                <div className="text-center mb-8">
+                     <div className="inline-flex items-center justify-center p-3 rounded-full bg-primary/10 text-primary mb-4 p-4 border border-primary/20 bg-gradient-to-br from-primary/20 to-transparent">
+                        <KeyRound className="h-8 w-8 text-primary" />
+                     </div>
+                    <h2 className="text-2xl font-bold text-foreground mb-2">
+                        Confirm Withdrawal
+                    </h2>
+                    <p className="text-muted-foreground text-sm">
+                        Enter the verification code sent to your email to confirm withdrawal of <span className="font-bold text-foreground">${amount}</span>
+                    </p>
+                </div>
+
+                <div className="px-4 pb-4">
+                     <OtpInput 
+                        email="your email"
+                        loading={isPending}
+                        onComplete={handleWithdrawOtpSubmit}
+                        onResend={async () => {
+                             const result = await initiateWithdrawal({
+                                amount: parseFloat(amount),
+                                currency: selectedAsset?.symbol || "USD",
+                                network: selectedNetwork?.name || "External",
+                                address: withdrawAddress,
+                                source: withdrawalSource 
+                             });
+                             return { success: result.success, error: result.error, message: "Code resent!" };
+                        }}
+                    />
+                </div>
+            </div>
+        </div>
+      )}
+
       <div className="space-y-8 animate-in slide-in-from-left-4 duration-500">
         <div className="flex items-center justify-between">
            <div>

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useTransition,  useRef } from "react";
+import { useState, useTransition, useRef, useEffect } from "react";
 import { Card } from "../ui/Card";
 import { Button } from "../ui/Button";
 import { User, Loader2, Upload } from "lucide-react";
@@ -11,19 +11,28 @@ import { useUploadThing } from "@/app/utils/uploadthing";
 import Image from "next/image";
 import { Modal } from "../ui/Modal";
 
+import { useUserData } from "@/app/hooks/use-user-data";
+import { FullPageLoader } from "@/app/components/ui/FullPageLoader";
+
 interface SettingsContentProps {
-  user: {
-    name: string | null;
-    email: string;
-    image?: string | null;
-  };
+  initialData?: any;
 }
 
-export function SettingsContent({ user }: SettingsContentProps) {
-  const [name, setName] = useState(user.name || "");
-  const [avatarPreview, setAvatarPreview] = useState<string | null>(user.image || null);
+export function SettingsContent({ initialData }: SettingsContentProps) {
+  const { data, isLoading: isQueryLoading } = useUserData(initialData);
+
+  const [name, setName] = useState("");
+  const [avatarPreview, setAvatarPreview] = useState<string | null>(null);
   const [selectedFile, setSelectedFile] = useState<File | null>(null);
-  
+
+  // Sync state with fetched data
+  useEffect(() => {
+    if (data) {
+      setName(data.name || "");
+      setAvatarPreview(data.image || null);
+    }
+  }, [data]);
+
   const [currentPassword, setCurrentPassword] = useState("");
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
@@ -41,6 +50,16 @@ export function SettingsContent({ user }: SettingsContentProps) {
       toast.error(`Upload failed: ${error.message}`);
     },
   });
+
+  if (isQueryLoading && !data) {
+    return <FullPageLoader />;
+  }
+
+  if (!data) return null;
+
+  const user = data;
+
+
 
   const handleFileSelect = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];

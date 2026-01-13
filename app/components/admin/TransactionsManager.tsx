@@ -8,7 +8,7 @@ import { Input } from "@/app/components/ui/Input";
 import { Modal } from "@/app/components/ui/Modal";
 import { 
   Check, Clock, Search, Ban, Trash2, ExternalLink, 
-  ArrowUpRight, ArrowDownLeft, Wallet, Copy, RefreshCcw
+  ArrowUpRight, ArrowDownLeft, Wallet, Copy, RefreshCcw, Loader2
 } from "lucide-react";
 import { 
   approveTransaction, 
@@ -62,6 +62,9 @@ export function TransactionsManager({ transactions: initialData }: TransactionsM
   // Modal States
   const [isDeleteModalOpen, setIsDeleteModalOpen] = useState(false);
   const [txToDelete, setTxToDelete] = useState<string | null>(null);
+  
+  // Loading State
+  const [processingId, setProcessingId] = useState<string | null>(null);
 
   // Hybrid Fetching: Fetch ALL data, then filter client-side
   // This prevents 'initialData' (full list) from blocking filtered queries
@@ -69,8 +72,10 @@ export function TransactionsManager({ transactions: initialData }: TransactionsM
     queryKey: ['transactions'], // Single key for all data
     queryFn: () => getTransactions({}), // Fetch all
     initialData: initialData,
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60,
+    staleTime: 30 * 1000,
+    refetchInterval: 30 * 1000,
+    refetchOnWindowFocus: true,
+    retry: 3,
   });
 
   // Client-Side Filtering
@@ -130,6 +135,7 @@ export function TransactionsManager({ transactions: initialData }: TransactionsM
   // --- Actions ---
 
   const handleApprove = async (id: string) => {
+    setProcessingId(id);
     try {
       const res = await approveTransaction(id);
       if (res.success) {
@@ -139,10 +145,13 @@ export function TransactionsManager({ transactions: initialData }: TransactionsM
       else toast.error(res.error || "Failed to approve");
     } catch (e) {
       toast.error("An error occurred");
+    } finally {
+      setProcessingId(null);
     }
   };
 
   const handleReject = async (id: string) => {
+    setProcessingId(id);
     try {
       const res = await rejectTransaction(id);
       if (res.success) {
@@ -152,6 +161,8 @@ export function TransactionsManager({ transactions: initialData }: TransactionsM
       else toast.error(res.error || "Failed to reject");
     } catch (e) {
       toast.error("An error occurred");
+    } finally {
+      setProcessingId(null);
     }
   };
 
@@ -339,17 +350,38 @@ export function TransactionsManager({ transactions: initialData }: TransactionsM
                            <div className="flex items-center justify-end gap-1">
                               {tx.status === 'PENDING' && (
                                   <>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-green-600 hover:bg-green-50" title="Approve" onClick={() => handleApprove(tx.id)}>
-                                        <Check className="h-4 w-4" />
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-8 w-8 text-green-600 hover:bg-green-50" 
+                                      title="Approve" 
+                                      onClick={() => handleApprove(tx.id)}
+                                      disabled={processingId === tx.id}
+                                    >
+                                        {processingId === tx.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Check className="h-4 w-4" />}
                                     </Button>
-                                    <Button size="icon" variant="ghost" className="h-8 w-8 text-slate-600 hover:bg-slate-100" title="Reject" onClick={() => handleReject(tx.id)}>
-                                        <Ban className="h-4 w-4" />
+                                    <Button 
+                                      size="icon" 
+                                      variant="ghost" 
+                                      className="h-8 w-8 text-slate-600 hover:bg-slate-100" 
+                                      title="Reject" 
+                                      onClick={() => handleReject(tx.id)}
+                                      disabled={processingId === tx.id}
+                                    >
+                                        {processingId === tx.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Ban className="h-4 w-4" />}
                                     </Button>
                                   </>
                               )}
                               
-                              <Button size="icon" variant="ghost" className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" title="Delete" onClick={() => handleDeleteRequest(tx.id)}>
-                                  <Trash2 className="h-4 w-4" />
+                              <Button 
+                                size="icon" 
+                                variant="ghost" 
+                                className="h-8 w-8 text-red-400 hover:text-red-600 hover:bg-red-50" 
+                                title="Delete" 
+                                onClick={() => handleDeleteRequest(tx.id)}
+                                disabled={processingId === tx.id}
+                              >
+                                  {processingId === tx.id ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trash2 className="h-4 w-4" />}
                               </Button>
                            </div>
                         </td>

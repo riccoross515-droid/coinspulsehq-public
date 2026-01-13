@@ -1,13 +1,13 @@
 "use client";
 
 import { useState, useTransition, Suspense } from "react";
-import { Card } from "../../components/ui/Card";
-import { Button } from "../../components/ui/Button";
+import { Card } from "@/app/components/ui/Card";
+import { Button } from "@/app/components/ui/Button";
 import { Check, Info, Rocket, X, Loader2, LayoutGrid, List, Cpu } from "lucide-react";
-import { createInvestment, getUserData } from "@/app/actions/user";
+import { createInvestment } from "@/app/actions/user";
 import toast from "react-hot-toast";
 import { useSearchParams, useRouter, usePathname } from "next/navigation";
-import { useQuery } from "@tanstack/react-query";
+import { useUserData } from "@/app/hooks/use-user-data";
 
 const plans = [
   {
@@ -65,18 +65,8 @@ function InvestContentInner({ investments: initialInvestments = [] }: InvestCont
   const activeTab = (tabParam === "my_investments" ? "my_investments" : "market") as "market" | "my_investments";
 
   // Hybrid Fetching for Investments
-  const { data: userData, refetch } = useQuery({
-    queryKey: ['userData'],
-    queryFn: () => getUserData(),
-    initialData: initialInvestments.length > 0 ? { 
-      balance: 0, 
-      transactions: [], 
-      assets: [], 
-      investments: initialInvestments 
-    } : undefined,
-    staleTime: 1000 * 60,
-    refetchInterval: 1000 * 60,
-  });
+  // Client-side Fetching (Data pre-fetched by wrapper, but we hook in for refetch/updates)
+  const { data: userData, refetch } = useUserData();
 
   const investments = userData?.investments || initialInvestments;
 

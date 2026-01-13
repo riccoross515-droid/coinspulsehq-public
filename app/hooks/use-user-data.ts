@@ -3,7 +3,23 @@
 import { useQuery } from "@tanstack/react-query";
 
 export interface UserData {
+  name: string | null;
+  email: string;
+  image?: string | null;
+  role: string;
   balance: number;
+  assets: Array<{
+    id: string;
+    symbol: string;
+    name: string;
+    icon: string | null;
+    networks: Array<{
+      id: string;
+      name: string;
+      depositAddress: string | null;
+      icon: string | null;
+    }>;
+  }>;
   transactions: Array<{
     id: string;
     userId: string;
@@ -42,8 +58,9 @@ export function useUserData(initialData?: UserData) {
     queryKey: ["user-data"],
     queryFn: fetchUserData,
     initialData,
-    staleTime: 60 * 1000, // 60 seconds
-    refetchOnMount: 'always', // ALWAYS fetch on mount, even with initialData
+    staleTime: 30 * 1000, // 30 seconds
+    refetchInterval: 30 * 1000, // Refetch every 30 seconds
     refetchOnWindowFocus: true,
+    retry: 3,
   });
 }
