@@ -393,7 +393,28 @@ export async function deleteAsset(id: string) {
 
 export async function createNetwork(data: { name: string; depositAddress?: string; assetId: string; icon?: string }) {
   try {
-    const network = await prisma.network.create({ data });
+    let iconToUse = data.icon;
+
+    // optimization: check if network exists with same name and use its icon if we don't have one
+    if (!iconToUse) {
+       const existingNetwork = await prisma.network.findFirst({
+         where: { 
+           name: { equals: data.name, mode: 'insensitive' },
+           icon: { not: null }
+         }
+       });
+
+       if (existingNetwork?.icon) {
+         iconToUse = existingNetwork.icon;
+       }
+    }
+
+    const network = await prisma.network.create({ 
+      data: {
+        ...data,
+        icon: iconToUse
+      } 
+    });
     revalidatePath("/admin/networks");
     revalidatePath("/admin/assets"); // Usually shown together
     return { success: true, data: network };
@@ -449,6 +470,7 @@ export async function getTransactions(filters: { q?: string; type?: string; stat
     return transactions.map((tx) => ({
       ...tx,
       amount: Number(tx.amount),
+      assetAmount: tx.assetAmount ? Number(tx.assetAmount) : null,
       user: tx.user ? {
         ...tx.user,
         balance: Number(tx.user.balance)

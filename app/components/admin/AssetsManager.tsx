@@ -334,35 +334,43 @@ export function AssetsManager({ initialAssets }: AssetsManagerProps) {
       <Modal isOpen={isNetworkModalOpen} onClose={() => setIsNetworkModalOpen(false)} title={editingNetwork ? "Edit Network" : "Add Network"}>
         <div className="p-6 space-y-4">
              <div className="flex items-center gap-4 mb-4">
-                 <div className="w-12 h-12 rounded-full bg-slate-50 border shrink-0 overflow-hidden relative flex items-center justify-center">
+                 <div className="w-12 h-12 rounded-full bg-slate-50 border shrink-0 overflow-hidden relative flex items-center justify-center group-hover:bg-slate-100 transition-colors">
                     {networkForm.icon ? (
                         <Image src={networkForm.icon} alt="Net" fill className="object-cover" />
                     ) : (
                         <Globe className="h-6 w-6 text-slate-300" />
                     )}
                  </div>
-                 <UploadButton
-                 className="flex"
-                        endpoint="imageUploader"
-                        onBeforeUploadBegin={(files) => {
-                           setIsUploadingNetworkIcon(true);
-                           return files;
-                        }}
-                        onClientUploadComplete={(res) => {
-                           if (res && res[0]) {
-                               setNetworkForm({...networkForm, icon: res[0].url});
-                               toast.success("Network icon uploaded");
-                           }
-                           setIsUploadingNetworkIcon(false);
-                        }}
-                        onUploadError={(error: Error) => {
-                           toast.error("Upload failed");
-                           setIsUploadingNetworkIcon(false);
-                        }}
-                        appearance={{
-                            button: "bg-slate-900 text-white !flex items-center justify-center text-xs px-3 py-1 h-8 shadow-none"
-                        }}
-                 />
+                 <div className="flex flex-col">
+                   <UploadButton
+                          endpoint="imageUploader"
+                          onBeforeUploadBegin={(files) => {
+                             setIsUploadingNetworkIcon(true);
+                             return files;
+                          }}
+                          onClientUploadComplete={(res) => {
+                             if (res && res[0]) {
+                                 setNetworkForm({...networkForm, icon: res[0].url});
+                                 toast.success("Network icon uploaded");
+                             }
+                             setIsUploadingNetworkIcon(false);
+                          }}
+                          onUploadError={(error: Error) => {
+                             toast.error("Upload failed");
+                             setIsUploadingNetworkIcon(false);
+                          }}
+                          content={{
+                            button({ ready }) {
+                              if (ready) return <div className="text-[10px] font-bold">UPLOAD ICON</div>
+                              return "Loading..."
+                            }
+                          }}
+                          appearance={{
+                              button: "bg-slate-900 text-white !flex items-center justify-center text-xs px-3 py-1 h-8 shadow-none rounded-lg w-full"
+                          }}
+                   />
+                   <p className="text-[10px] text-slate-400 mt-1 max-w-[150px] leading-tight">Optional. Will reuse existing icon if network name matches.</p>
+                 </div>
              </div>
 
             <div className="space-y-2">

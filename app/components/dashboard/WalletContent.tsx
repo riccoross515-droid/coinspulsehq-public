@@ -48,6 +48,7 @@ interface Transaction {
   id: string;
   userId: string;
   amount: number;
+  assetAmount?: number | null;
   type: string;
   status: string;
   currency: string;
@@ -173,6 +174,11 @@ export function WalletContent({ initialData }: WalletContentProps) {
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedAsset || !amount || !withdrawAddress) return;
+
+    if (parseFloat(amount) < 1) {
+      toast.error("Minimum withdrawal amount is $1");
+      return;
+    }
 
     if (parseFloat(amount) > availableToWithdraw) {
       toast.error("Insufficient funds (including pending withdrawals)");
@@ -411,18 +417,21 @@ export function WalletContent({ initialData }: WalletContentProps) {
                         </div>
                     </div>
 
-                    <div className="flex flex-col gap-4">
+                     <div className="flex flex-col gap-4">
                         <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide ml-1 block">
-                             Step 3: Enter Amount Deposited
+                             Step 3: Enter Amount Deposited {selectedAsset ? `(${selectedAsset.symbol})` : ''}
                         </label>
                         <div className="relative group">
-                           <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
+                           {/* Removed $ prefix as per request */}
                            <input 
                                type="number"
                                value={amount}
                                disabled={isPending}
+                               min="0"
+                               step="any"
+                               placeholder={`e.g. 0.025`}
                                onChange={(e) => setAmount(e.target.value)}
-                               className="w-full h-14 rounded-2xl border border-border/50 bg-muted/50 pl-10 px-5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
+                               className="w-full h-14 rounded-2xl border border-border/50 bg-muted/50 px-5 text-lg font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
                            />
                         </div>
                         <Button 
@@ -552,6 +561,8 @@ export function WalletContent({ initialData }: WalletContentProps) {
                             value={amount}
                             onChange={(e) => setAmount(e.target.value)}
                             max={maxAmount}
+                            min="1"
+                            step="any"
                             className="w-full h-14 rounded-2xl border border-border/50 bg-muted/50 pl-10 px-5 text-lg font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 transition-all disabled:opacity-50"
                         />
                       </div>
@@ -611,16 +622,29 @@ export function WalletContent({ initialData }: WalletContentProps) {
                               </div>
                           </div>
                           <div className="text-right">
-                              {/* DISPLAY FIX: Show as USD formatted */}
-                              <p className={`text-base font-semibold ${
-                                tx.type === 'DEPOSIT' ? 'text-green-500' : 'text-foreground'
-                              }`}>
-                                  {tx.type === 'DEPOSIT' ? '+' : '-'}${Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
-                              </p>
-                              {tx.currency && (
-                                <span className="text-[10px] text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
-                                    {tx.currency}
-                                </span>
+                              {/* If deposit and assetAmount exists, show crypto amount first, then USD */}
+                              {tx.type === 'DEPOSIT' && tx.assetAmount ? (
+                                <>
+                                  <p className="text-base font-semibold text-green-500 font-mono">
+                                      +{Number(tx.assetAmount).toLocaleString(undefined, { maximumFractionDigits: 8 })} {tx.currency}
+                                  </p>
+                                  <p className="text-xs text-muted-foreground font-medium">
+                                      ≈ ${Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </p>
+                                </>
+                              ) : (
+                                <>
+                                  <p className={`text-base font-semibold ${
+                                    tx.type === 'DEPOSIT' ? 'text-green-500' : 'text-foreground'
+                                  }`}>
+                                      {tx.type === 'DEPOSIT' ? '+' : '-'}${Number(tx.amount).toLocaleString(undefined, { minimumFractionDigits: 2, maximumFractionDigits: 2 })}
+                                  </p>
+                                  {tx.currency && (
+                                    <span className="text-[10px] text-muted-foreground font-medium bg-muted px-1.5 py-0.5 rounded">
+                                        {tx.currency}
+                                    </span>
+                                  )}
+                                </>
                               )}
                               <div className="mt-1">
                                    <span className={`inline-flex px-2.5 py-0.5 rounded-full text-[10px] font-semibold tracking-wide ${

@@ -17,48 +17,7 @@ async function main() {
   })
   console.log({ admin })
 
-  // 2. Create Demo User
-  const demoUser = await prisma.user.upsert({
-    where: { email: 'user@demo.com' },
-    update: {},
-    create: {
-      email: 'user@demo.com',
-      name: 'Alex Morgan',
-      password: 'usertest',
-      role: 'USER',
-      balance: 12450.00,
-      transactions: {
-        create: [
-          {
-            type: 'DEPOSIT',
-            amount: 5000.00,
-            currency: 'USDT',
-            network: 'TRC20',
-            status: 'COMPLETED',
-            address: 'T9yX8jZ7cpPhL7k3kL2m1n5x9jZ7cpPhL7'
-          },
-          {
-            type: 'WITHDRAWAL',
-            amount: 200.00,
-            currency: 'USDT',
-            network: 'ERC20',
-            status: 'PENDING',
-            address: '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
-          }
-        ]
-      },
-      investments: {
-        create: [
-             {
-                 planId: 'growth',
-                 amount: 1000.00,
-                 status: 'ACTIVE'
-             }
-        ]
-      }
-    },
-  })
-  console.log({ demoUser })
+  // Demo user creation removed as per user request.
 
   console.log('Seeding finished.')
 }

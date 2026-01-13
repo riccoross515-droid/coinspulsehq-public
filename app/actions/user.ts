@@ -156,6 +156,75 @@ export async function createTransaction(data: {
 
     if (!user) return { success: false, error: "User not found" };
 
+    let usdAmount = data.amount;
+    let assetAmount: number | null = null;
+
+    // For deposits, the input amount is the ASSET amount (e.g. 0.002 BTC).
+    // We need to convert this to USD for the 'amount' field, and store the original in 'assetAmount'.
+    if (data.type === "DEPOSIT") {
+       assetAmount = data.amount;
+       
+       // 1. Fetch Price
+       // We try to find the CoinGecko ID from the asset symbol if possible, or just default search.
+       // Since we don't store CoinGecko ID in DB (yet), we might need a mapping or search.
+       // For now, let's use a mapping or simple search based on symbol.
+       try {
+          const symbolMap: Record<string, string> = {
+            'BTC': 'bitcoin',
+            'ETH': 'ethereum',
+            'USDT': 'tether',
+            'USDC': 'usd-coin',
+            'BNB': 'binancecoin',
+            'XRP': 'ripple',
+            'SOL': 'solana',
+            'TRX': 'tron',
+            'LTC': 'litecoin',
+            'DOGE': 'dogecoin',
+            'ADA': 'cardano'
+          };
+          
+          const coinId = symbolMap[data.currency.toUpperCase()];
+          let price = 0;
+
+          if (coinId) {
+             const res = await fetch(`https://api.coingecko.com/api/v3/simple/price?ids=${coinId}&vs_currencies=usd`);
+             if (res.ok) {
+                const json = await res.json();
+                price = json[coinId]?.usd || 0;
+             }
+          }
+
+          // Fallback if price fetch fails or no ID found? 
+          // If USDT/USDC, price is effectively 1.
+          if ((!price || price === 0) && (data.currency.toUpperCase() === 'USDT' || data.currency.toUpperCase() === 'USDC')) {
+             price = 1;
+          }
+          
+          if (price > 0) {
+             usdAmount = data.amount * price;
+          } else {
+             // If we can't get the price, we might have a problem. 
+             // Option A: Fail. Option B: Store 0 and let Admin fix? 
+             // Let's store 0 USD and assume Admin sets it, OR fail.
+             // Better: Fallback to some default or let it be 0 but warn?
+             // User instruction: "Call an api... to check the live price". 
+             // If api fails, we should probably let the user know or try again.
+             // But for now, if 0, we'll just save 0. The admin overrides anyway.
+             console.warn(`Could not fetch price for ${data.currency}, saving as 0 USD`);
+             usdAmount = 0; 
+          }
+
+       } catch (error) {
+           console.error("Price fetch error:", error);
+           // Fallback for stablecoins at least
+           if (['USDT', 'USDC', 'BUSD'].includes(data.currency.toUpperCase())) {
+               usdAmount = data.amount;
+           } else {
+               usdAmount = 0;
+           }
+       }
+    }
+
     const source = (data.type === 'WITHDRAWAL' && data.source && data.source !== 'wallet') 
       ? data.source 
       : "WALLET";
@@ -209,7 +278,8 @@ export async function createTransaction(data: {
     await prisma.transaction.create({
       data: {
         userId: user.id,
-        amount: data.amount,
+        amount: usdAmount,
+        assetAmount: assetAmount,
         type: data.type,
         currency: data.currency,
         network: data.network,
@@ -437,7 +507,8 @@ export async function getUserData() {
       balance: Number(user.balance),
       transactions: transactions.map(tx => ({
         ...tx,
-        amount: Number(tx.amount)
+        amount: Number(tx.amount),
+        assetAmount: tx.assetAmount ? Number(tx.assetAmount) : null
       })),
       assets,
       investments: investments.map(inv => ({

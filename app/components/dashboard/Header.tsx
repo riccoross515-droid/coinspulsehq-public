@@ -2,7 +2,8 @@
 
 import { useState } from "react";
 import Image from "next/image";
-import { Menu, User } from "lucide-react";
+import Link from "next/link";
+import { Menu, User, Shield } from "lucide-react";
 import { Button } from "@/app/components/ui/Button";
 import { ThemeToggle } from "@/app/components/ThemeToggle";
 import { Modal } from "@/app/components/ui/Modal";
@@ -11,9 +12,10 @@ interface DashboardHeaderProps {
   onMenuClick: () => void;
   userName?: string | null;
   userImage?: string | null;
+  userRole?: string;
 }
 
-export function DashboardHeader({ onMenuClick, userName, userImage }: DashboardHeaderProps) {
+export function DashboardHeader({ onMenuClick, userName, userImage, userRole }: DashboardHeaderProps) {
   const [isAvatarModalOpen, setIsAvatarModalOpen] = useState(false);
 
   return (
@@ -25,6 +27,19 @@ export function DashboardHeader({ onMenuClick, userName, userImage }: DashboardH
       </div>
 
       <div className="flex flex-1 md:justify-end justify-end items-center gap-4">
+         {/* Admin Switch Link */}
+         {userRole === "ADMIN" && (
+           <Link href="/admin">
+             <Button 
+               variant="outline" 
+               size="sm" 
+               className="gap-2 border-primary/20 bg-primary/5 hover:bg-primary/10 text-primary font-semibold"
+             >
+               <Shield className="h-4 w-4" />
+               <span className="hidden md:inline">Admin Panel</span>
+             </Button>
+           </Link>
+         )}
          {/* Right Side Icons */}
         <ThemeToggle />
         

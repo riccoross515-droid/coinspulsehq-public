@@ -33,7 +33,7 @@ const EmailWrapper = (content: string) => `
 <body style="margin: 0; padding: 20px; background-color: #f9fafb;">
   <div style="${emailStyles.container}">
     <div style="${emailStyles.header}">
-       <a href="https://www.coinspulsehq.com" style="${emailStyles.logo}">
+       <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.coinspulsehq.com'}" style="${emailStyles.logo}">
          <span style="display: block; letter-spacing: 1px;">COINSPULSE</span>
        </a>
     </div>
@@ -118,7 +118,7 @@ export async function sendWelcomeEmail(email: string, name: string): Promise<Sen
     <p style="${emailStyles.text}">Your account has been successfully verified and your access to the Coinspulse infrastructure is now active.</p>
     <p style="${emailStyles.text}">You can now deploy high-performance mining rigs and participate in our global reward distribution clusters.</p>
     <div style="${emailStyles.buttonContainer}">
-      <a href="https://www.coinspulsehq.com/dashboard" style="${emailStyles.button}">Go to Dashboard</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.coinspulsehq.com'}/dashboard" style="${emailStyles.button}">Go to Dashboard</a>
     </div>
   `;
 
@@ -220,7 +220,7 @@ export async function sendDepositConfirmation(
     </table>
 
     <div style="${emailStyles.buttonContainer}">
-      <a href="https://www.coinspulsehq.com/dashboard" style="${emailStyles.button}">View Balance</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.coinspulsehq.com'}/dashboard" style="${emailStyles.button}">View Balance</a>
     </div>
   `;
 
@@ -443,7 +443,7 @@ export async function sendInvestmentConfirmation(
     <p style="${emailStyles.text}">You can monitor real-time hash rates, energy efficiency, and accrued outputs directly from your dashboard.</p>
 
     <div style="${emailStyles.buttonContainer}">
-      <a href="https://www.coinspulsehq.com/dashboard/invest" style="${emailStyles.button}">Monitor Rig Performance</a>
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.coinspulsehq.com'}/dashboard/invest" style="${emailStyles.button}">Monitor Rig Performance</a>
     </div>
   `;
 

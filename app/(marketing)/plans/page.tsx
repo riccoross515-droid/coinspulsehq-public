@@ -2,6 +2,19 @@ import { Card } from "../../components/ui/Card";
 import { Button } from "../../components/ui/Button";
 import { Check, Star, Info, Cpu, Zap, ShieldCheck } from "lucide-react";
 import Link from "next/link";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: 'Mining Plans',
+  description: 'Choose from Standard, Professional, or Institutional cloud mining contracts. Lease high-performance ASIC and GPU hashrate with daily ROI from 0.5% to 2.5%.',
+  keywords: ['mining plans', 'hashrate leasing', 'cloud mining contracts', 'ASIC mining', 'mining ROI', 'crypto mining packages'],
+  openGraph: {
+    title: 'Mining Hashrate Contracts | Coinspulse',
+    description: 'Lease high-performance computing power from global datacenters. Fixed-term contracts with daily mining rewards.',
+    url: '/plans',
+    type: 'website',
+  },
+};
 
 export default function PlansPage() {
   const plans = [
@@ -31,8 +44,35 @@ export default function PlansPage() {
     },
   ];
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@type": "ItemList",
+    "name": "Mining Hashrate Contracts",
+    "itemListElement": plans.map((plan, index) => ({
+      "@type": "ListItem",
+      "position": index + 1,
+      "item": {
+        "@type": "Product",
+        "name": plan.name,
+        "description": `${plan.roi} daily ROI cloud mining contract with ${plan.features.join(', ')}`,
+        "offers": {
+          "@type": "AggregateOffer",
+          "priceCurrency": "USD",
+          "lowPrice": plan.min.replace('$', '').replace(',', ''),
+          "highPrice": plan.max === "No Limit" ? "10000000" : plan.max.replace('$', '').replace(',', ''),
+          "offerCount": "1"
+        }
+      }
+    }))
+  };
+
   return (
-    <div className="min-h-screen pt-24 px-6 pb-20 max-w-7xl mx-auto">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div className="min-h-screen pt-24 px-6 pb-20 max-w-7xl mx-auto">
       <div className="text-center mb-16">
         <h1 className="text-4xl md:text-5xl font-bold mb-6 text-foreground">
           Mining Hashrate Contracts
@@ -57,51 +97,50 @@ export default function PlansPage() {
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-8 items-start">
         {plans.map((plan) => (
-          <Card 
-            key={plan.name} 
-            className={`p-8 relative transition-all duration-300 hover:-translate-y-2 border-border flex flex-col h-full ${
-              plan.recommended ? 'border-primary shadow-2xl shadow-primary/10 bg-card' : 'bg-card/50'
-            }`}
-          >
-            {plan.recommended && (
-              <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
-                <Star className="h-3 w-3 fill-current" /> Most Popular
+          <Link href="/auth" key={plan.name}>
+            <Card 
+              className={`p-8 relative transition-all duration-300 hover:-translate-y-2 border-border flex flex-col h-full ${
+                plan.recommended ? 'border-primary shadow-2xl shadow-primary/10 bg-card' : 'bg-card/50'
+              }`}
+            >
+              {plan.recommended && (
+                <div className="absolute -top-4 left-1/2 -translate-x-1/2 bg-primary text-primary-foreground px-4 py-1 rounded-full text-sm font-bold flex items-center gap-1 shadow-lg">
+                  <Star className="h-3 w-3 fill-current" /> Most Popular
+                </div>
+              )}
+              
+              <div className="mb-6">
+                  <h3 className="text-2xl font-bold mb-2 text-foreground">{plan.name}</h3>
+                  <div className="text-4xl font-bold text-primary mb-1">{plan.roi}</div>
+                  <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">Expected Daily Output</p>
               </div>
-            )}
-            
-            <div className="mb-6">
-                <h3 className="text-2xl font-bold mb-2 text-foreground">{plan.name}</h3>
-                <div className="text-4xl font-bold text-primary mb-1">{plan.roi}</div>
-                <p className="text-muted-foreground text-xs font-bold uppercase tracking-widest">Expected Daily Output</p>
-            </div>
-            
-            <div className="space-y-4 mb-8">
-               <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground text-sm">Lease Minimum</span>
-                  <span className="font-bold text-foreground text-sm">{plan.min}</span>
-               </div>
-               <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground text-sm">Lease Maximum</span>
-                  <span className="font-bold text-foreground text-sm">{plan.max}</span>
-               </div>
-               <div className="flex justify-between py-2 border-b border-border">
-                  <span className="text-muted-foreground text-sm">Hardware Term</span>
-                  <span className="font-bold text-foreground text-sm">12 Months Fixed</span>
-               </div>
-            </div>
+              
+              <div className="space-y-4 mb-8">
+                <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground text-sm">Lease Minimum</span>
+                    <span className="font-bold text-foreground text-sm">{plan.min}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground text-sm">Lease Maximum</span>
+                    <span className="font-bold text-foreground text-sm">{plan.max}</span>
+                </div>
+                <div className="flex justify-between py-2 border-b border-border">
+                    <span className="text-muted-foreground text-sm">Hardware Term</span>
+                    <span className="font-bold text-foreground text-sm">12 Months Fixed</span>
+                </div>
+              </div>
 
-            <ul className="space-y-3 mb-12 flex-1">
-              {plan.features.map((feature, i) => (
-                <li key={i} className="flex items-center gap-3 text-sm text-foreground/80">
-                  <div className={`rounded-full p-1 ${plan.recommended ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
-                    <Check className="h-3 w-3" />
-                  </div>
-                  {feature}
-                </li>
-              ))}
-            </ul>
+              <ul className="space-y-3 mb-12 flex-1">
+                {plan.features.map((feature, i) => (
+                  <li key={i} className="flex items-center gap-3 text-sm text-foreground/80">
+                    <div className={`rounded-full p-1 ${plan.recommended ? 'bg-primary/20 text-primary' : 'bg-muted text-muted-foreground'}`}>
+                      <Check className="h-3 w-3" />
+                    </div>
+                    {feature}
+                  </li>
+                ))}
+              </ul>
 
-            <Link href="/auth" className="w-full">
               <Button 
                   variant={plan.recommended ? 'primary' : 'outline'} 
                   className="w-full font-bold h-12"
@@ -109,10 +148,11 @@ export default function PlansPage() {
               >
                 Start {plan.name}
               </Button>
-            </Link>
-          </Card>
+            </Card>
+          </Link>
         ))}
       </div>
     </div>
+    </>
   );
 }

@@ -12,6 +12,7 @@ interface DashboardLayoutClientProps {
     name: string | null;
     image: string | null;
     balance: number;
+    role?: string;
   } | null;
 }
 
@@ -53,6 +54,7 @@ export function DashboardLayoutClient({ children, user: initialUser }: Dashboard
           onMenuClick={() => setIsSidebarOpen(true)} 
           userName={initialUser?.name ?? "User"}
           userImage={initialUser?.image}
+          userRole={initialUser?.role}
         />
         <main className="flex-1 p-6 md:p-8 pt-6 max-w-7xl mx-auto w-full animate-in fade-in slide-in-from-bottom-4 duration-500">
           {children}

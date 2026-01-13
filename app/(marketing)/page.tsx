@@ -3,6 +3,19 @@ import { Card } from "../components/ui/Card";
 import { Shield, Zap, TrendingUp, Globe, Smartphone, Lock, Cpu, Server, ShieldCheck } from "lucide-react";
 import Link from "next/link";
 import { CryptoTicker } from "../components/CryptoTicker";
+import type { Metadata } from "next";
+
+export const metadata: Metadata = {
+  title: 'Home',
+  description: 'Coinspulse offers enterprise-grade cloud mining infrastructure with institutional-quality hashrate leasing for Bitcoin, Ethereum, and major cryptocurrencies.',
+  keywords: ['cloud mining platform', 'institutional mining', 'bitcoin cloud mining', 'ethereum mining', 'hashrate leasing', 'crypto mining investment'],
+  openGraph: {
+    title: 'Coinspulse - Premier Institutional Cloud Mining Platform',
+    description: 'Lease premium hashrate from global datacenters. Professional-grade mining hardware working for you 24/7.',
+    url: '/',
+    type: 'website',
+  },
+};
 
 export default async function Home() {
   // Server-side fetch
@@ -47,8 +60,52 @@ export default async function Home() {
     },
   ];
 
+  const structuredData = {
+    "@context": "https://schema.org",
+    "@graph": [
+      {
+        "@type": "Organization",
+        "@id": "https://www.coinspulsehq.com/#organization",
+        "name": "Coinspulse",
+        "url": "https://www.coinspulsehq.com",
+        "logo": {
+          "@type": "ImageObject",
+          "url": "https://www.coinspulsehq.com/logo.png"
+        },
+        "description": "Premier institutional cloud mining platform offering enterprise-grade hashrate leasing",
+        "sameAs": [
+          "https://twitter.com/coinspulse",
+          "https://linkedin.com/company/coinspulse"
+        ]
+      },
+      {
+        "@type": "WebSite",
+        "@id": "https://www.coinspulsehq.com/#website",
+        "url": "https://www.coinspulsehq.com",
+        "name": "Coinspulse",
+        "publisher": {
+          "@id": "https://www.coinspulsehq.com/#organization"
+        }
+      },
+      {
+        "@type": "Service",
+        "name": "Cloud Mining Services",
+        "provider": {
+          "@id": "https://www.coinspulsehq.com/#organization"
+        },
+        "serviceType": "Cryptocurrency Cloud Mining",
+        "description": "Institutional-grade cloud mining infrastructure for Bitcoin, Ethereum, and major cryptocurrencies"
+      }
+    ]
+  };
+
   return (
-    <div className="min-h-screen pt-16 pb-12">
+    <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(structuredData) }}
+      />
+      <div className="min-h-screen pt-16 pb-12">
       <CryptoTicker data={cryptoData} />
       
       {/* Hero Section */}
@@ -156,5 +213,6 @@ export default async function Home() {
            </div>
        </section>
     </div>
+    </>
   );
 }

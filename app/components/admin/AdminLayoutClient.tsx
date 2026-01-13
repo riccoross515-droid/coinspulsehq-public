@@ -2,8 +2,9 @@
 
 import { useState, useEffect } from "react";
 import { useTheme } from "next-themes";
+import Link from "next/link";
 import { AdminSidebar } from "./AdminSidebar";
-import { Menu } from "lucide-react";
+import { Menu, User } from "lucide-react";
 import { Button } from "../ui/Button";
 
 export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
@@ -45,9 +46,23 @@ export function AdminLayoutClient({ children }: { children: React.ReactNode }) {
                  <h1 className="font-bold text-slate-800 text-lg md:hidden">Admin</h1>
              </div>
              
-             <div className="flex items-center gap-2">
-                 <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
-                 <span className="text-xs font-medium text-slate-500 hidden md:inline">System Online</span>
+             <div className="flex items-center gap-4">
+                 {/* User Dashboard Link */}
+                 <Link href="/dashboard">
+                   <Button 
+                     variant="outline" 
+                     size="sm" 
+                     className="gap-2 border-slate-300 hover:bg-slate-100 text-slate-700 font-semibold"
+                   >
+                     <User className="h-4 w-4" />
+                     <span className="hidden md:inline">User View</span>
+                   </Button>
+                 </Link>
+                 
+                 <div className="flex items-center gap-2">
+                     <div className="w-2 h-2 rounded-full bg-green-500 animate-pulse" />
+                     <span className="text-xs font-medium text-slate-500 hidden md:inline">System Online</span>
+                 </div>
              </div>
          </header>
 

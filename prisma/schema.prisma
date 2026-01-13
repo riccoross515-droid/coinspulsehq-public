@@ -31,6 +31,7 @@ model Transaction {
   userId    String
   type      String   // "DEPOSIT", "WITHDRAWAL", "INVESTMENT", "PROFIT"
   amount    Decimal
+  assetAmount Decimal? // The actual crypto amount (e.g. 0.002 BTC)
   currency  String   // "USDT", "BTC", "ETH"
   network   String?  // "TRC20", "ERC20", "BTC", "SOL", etc.
   status    String   @default("PENDING") // "PENDING", "COMPLETED", "FAILED"

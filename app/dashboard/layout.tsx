@@ -42,11 +42,11 @@ export default async function DashboardLayout({
     redirect("/");
   }
 
-  // Strict Access Control: Admins cannot access User Dashboard
-  if (user?.role === "ADMIN") {
-    const { redirect } = await import("next/navigation");
-    redirect("/admin");
-  }
+  // Allow admins to access user dashboard for testing/switching purposes
+  // if (user?.role === "ADMIN") {
+  //   const { redirect } = await import("next/navigation");
+  //   redirect("/admin");
+  // }
 
   // Calculate Total Portfolio Value
   const walletBalance = user ? Number(user.balance) : 0;
@@ -58,7 +58,7 @@ export default async function DashboardLayout({
   return (
     <AuthProvider>
       <DashboardLayoutClient 
-        user={user ? { name: user.name, image: user.image, balance: totalPortfolioValue } : null}
+        user={user ? { name: user.name, image: user.image, balance: totalPortfolioValue, role: user.role } : null}
       >
         {children}
       </DashboardLayoutClient>
