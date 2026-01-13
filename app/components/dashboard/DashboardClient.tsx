@@ -59,7 +59,7 @@ export function DashboardClient({
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-3xl font-black mb-2">
-          {greeting.text}, {userName}! {greeting.emoji}
+          {greeting.text}, {data?.name || userName}! {greeting.emoji}
         </h1>
         <p className="text-[13px] font-medium text-muted-foreground">
           Overview of your cloud mining operations and hardware efficiency.

@@ -475,3 +475,94 @@ export async function getAssets() {
     return [];
   }
 }
+// --- User Management ---
+
+export async function getUsers(filters: { q?: string; role?: string } = {}) {
+  const where: Prisma.UserWhereInput = {};
+  
+  if (filters.role && filters.role !== "ALL") {
+    where.role = filters.role;
+  }
+  
+  if (filters.q) {
+    where.OR = [
+      { name: { contains: filters.q, mode: 'insensitive' } },
+      { email: { contains: filters.q, mode: 'insensitive' } },
+      { id: { contains: filters.q } }
+    ];
+  }
+
+  try {
+    const users = await prisma.user.findMany({
+      where,
+      orderBy: { createdAt: "desc" },
+      include: {
+        investments: true,
+        transactions: true,
+      }
+    });
+
+    return users.map(user => ({
+      ...user,
+      balance: Number(user.balance)
+    }));
+  } catch (error) {
+    console.error("Failed to fetch users:", error);
+    return [];
+  }
+}
+
+export async function updateUser(id: string, data: Partial<Prisma.UserUpdateInput> & { balance?: number }) {
+  try {
+    const updateData: Prisma.UserUpdateInput = { ...data };
+    
+    // Convert number back to Decimal if balance is provided
+    if (data.balance !== undefined) {
+      updateData.balance = new Prisma.Decimal(data.balance);
+    }
+
+    await prisma.user.update({
+      where: { id },
+      data: updateData,
+    });
+    
+    revalidatePath("/admin/users");
+    revalidatePath("/dashboard"); // For the user themselves
+    return { success: true };
+  } catch (error) {
+    console.error("Update User Error:", error);
+    return { success: false, error: "Failed to update user" };
+  }
+}
+
+export async function deleteUser(id: string) {
+  try {
+    await prisma.user.delete({
+      where: { id },
+    });
+    revalidatePath("/admin/users");
+    return { success: true };
+  } catch (error) {
+    console.error("Delete User Error:", error);
+    return { success: false, error: "Failed to delete user" };
+  }
+}
+
+export async function createUser(data: Prisma.UserCreateInput & { balance?: number }) {
+  try {
+    const createData: Prisma.UserCreateInput = {
+      ...data,
+      balance: new Prisma.Decimal(data.balance || 0)
+    };
+    
+    const user = await prisma.user.create({
+      data: createData,
+    });
+    
+    revalidatePath("/admin/users");
+    return { success: true, data: user };
+  } catch (error) {
+    console.error("Create User Error:", error);
+    return { success: false, error: "Failed to create user" };
+  }
+}

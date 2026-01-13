@@ -501,3 +501,38 @@ export async function sendContactFormEmail(
     return { success: false, error };
   }
 }
+
+// 12. Password Reset Email
+export async function sendPasswordResetEmail(
+  email: string,
+  resetLink: string
+): Promise<SendEmailResult> {
+  const content = `
+    <h2 style="${emailStyles.heading}">Reset Your Password 🔒</h2>
+    <p style="${emailStyles.text}">We received a request to reset the password for your Coinspulse account.</p>
+    <p style="${emailStyles.text}">Click the button below to secure your account and set a new password:</p>
+    
+    <div style="${emailStyles.buttonContainer}">
+      <a href="${resetLink}" style="${emailStyles.button}">Reset Password</a>
+    </div>
+
+    <p style="${emailStyles.text}">This link is valid for 15 minutes. If you didn't request a password reset, you can safely ignore this email.</p>
+    
+    <div style="${emailStyles.alert}">
+      <strong>Security Tip:</strong> Never share this link with anyone. Coinspulse support will never ask for your password.
+    </div>
+  `;
+
+  try {
+    const data = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: email,
+      subject: 'Reset your Coinspulse password',
+      html: EmailWrapper(content),
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error("Password Reset Email Error:", error);
+    return { success: false, error };
+  }
+}

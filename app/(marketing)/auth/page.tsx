@@ -183,9 +183,9 @@ function AuthContent() {
                     {isLogin && (
                         <div className="flex justify-end">
                             {/* Hidden since we are using OTP primarily now, but could be "Use Password" toggle */}
-                             <a href="#" className="text-sm text-[#333] dark:text-primary hover:text-[#333]/80 font-medium">
+                             <Link href="/auth/forgot-password" className="text-sm text-[#333] dark:text-primary hover:text-[#333]/80 font-medium">
                                 Forgot Password?
-                             </a>
+                             </Link>
                         </div>
                     )}
 

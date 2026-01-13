@@ -90,12 +90,12 @@ export function Sidebar({ isOpen, onClose, balance }: SidebarProps) {
               <p className="text-xl font-black text-foreground">${(balance ?? 0).toLocaleString()}</p>
            </div>
             <Button 
-              variant="outline" 
-              className="w-full justify-start gap-3 text-muted-foreground hover:text-destructive hover:border-destructive/50 hover:bg-destructive/10"
+              variant="ghost" 
+              className="w-full justify-start gap-3 text-destructive hover:text-destructive hover:bg-destructive/10 font-bold"
               onClick={() => logout()}
             >
               <LogOut className="h-5 w-5" />
-              Sign Out
+              Logout
             </Button>
         </div>
       </div>
