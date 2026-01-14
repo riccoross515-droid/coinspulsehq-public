@@ -184,15 +184,16 @@ export function UsersManager({ initialUsers }: UsersManagerProps) {
       <Card className="border-slate-200 shadow-sm bg-white overflow-hidden">
         <div className="overflow-x-auto">
           <table className="w-full text-sm text-left">
-            <thead className="bg-slate-50 text-slate-500 border-b border-slate-200 font-medium tracking-wide uppercase text-[10px]">
-              <tr>
-                <th className="px-6 py-4">User Details</th>
-                <th className="px-6 py-4">Role & Status</th>
-                <th className="px-6 py-4">Wallet Balance</th>
-                <th className="px-6 py-4">Total Portfolio</th>
-                <th className="px-6 py-4">Joined</th>
-                <th className="px-6 py-4 text-right">Actions</th>
-              </tr>
+            <thead className="bg-slate-50 text-slate-500">
+                  <tr className="text-left text-[10px] uppercase tracking-widest text-slate-500 font-black">
+                    <th className="px-6 py-4 font-black">User</th>
+                    <th className="px-6 py-4 font-black">Status</th>
+                    <th className="px-6 py-4 font-black">Wallet Balance</th>
+                    <th className="px-6 py-4 font-black">Total Invested</th>
+                    <th className="px-6 py-4 font-black">Total Portfolio</th>
+                    <th className="px-6 py-4 font-black">Joined</th>
+                    <th className="px-6 py-4 text-right font-black">Actions</th>
+                  </tr>
             </thead>
             <tbody className="divide-y divide-slate-100">
               {filteredUsers.map((user: any) => {
@@ -228,6 +229,14 @@ export function UsersManager({ initialUsers }: UsersManagerProps) {
                     </td>
                     <td className="px-6 py-4 font-black text-slate-900">
                       ${user.balance.toLocaleString(undefined, { minimumFractionDigits: 2 })}
+                    </td>
+                    <td className="px-6 py-4 font-black text-slate-900">
+                      ${(() => {
+                        const activeInvestments = user.investments?.filter((inv: any) => inv.status === "ACTIVE") || [];
+                        const totalInvested = activeInvestments.reduce((acc: number, inv: any) => acc + Number(inv.amount), 0);
+                        const totalProfit = activeInvestments.reduce((acc: number, inv: any) => acc + Number(inv.profit || 0), 0);
+                        return (totalInvested + totalProfit).toLocaleString(undefined, { minimumFractionDigits: 2 });
+                      })()}
                     </td>
                     <td className="px-6 py-4 font-black text-slate-900">
                       ${(() => {
