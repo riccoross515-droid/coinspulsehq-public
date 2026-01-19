@@ -55,7 +55,7 @@ export function DashboardClient({
   const recentTransactions = transactions.slice(0, 5);
 
   return (
-    <div className="p-6 max-w-7xl mx-auto">
+    <div className="">
       {/* Greeting */}
       <div className="mb-8">
         <h1 className="text-3xl font-black mb-2">
