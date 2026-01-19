@@ -588,3 +588,18 @@ export async function createUser(data: Prisma.UserCreateInput & { balance?: numb
     return { success: false, error: "Failed to create user" };
   }
 }
+
+// --- Investment Management ---
+
+export async function deleteInvestment(id: string) {
+  try {
+    await prisma.investment.delete({
+      where: { id },
+    });
+    revalidatePath("/admin/investments");
+    return { success: true };
+  } catch (error) {
+    console.error("Delete Investment Error:", error);
+    return { success: false, error: "Failed to delete investment" };
+  }
+}

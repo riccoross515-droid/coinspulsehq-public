@@ -234,8 +234,7 @@ export function UsersManager({ initialUsers }: UsersManagerProps) {
                       ${(() => {
                         const activeInvestments = user.investments?.filter((inv: any) => inv.status === "ACTIVE") || [];
                         const totalInvested = activeInvestments.reduce((acc: number, inv: any) => acc + Number(inv.amount), 0);
-                        const totalProfit = activeInvestments.reduce((acc: number, inv: any) => acc + Number(inv.profit || 0), 0);
-                        return (totalInvested + totalProfit).toLocaleString(undefined, { minimumFractionDigits: 2 });
+                        return totalInvested.toLocaleString(undefined, { minimumFractionDigits: 2 });
                       })()}
                     </td>
                     <td className="px-6 py-4 font-black text-slate-900">

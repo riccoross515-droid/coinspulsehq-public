@@ -14,12 +14,11 @@ import {
   Check, 
   Loader2,
   AlertCircle,
-  LucideIcon,
   RefreshCcw,
   KeyRound,
   X 
 } from "lucide-react";
-import { createTransaction, initiateWithdrawal, completeWithdrawal } from "@/app/actions/user";
+import { initiateWithdrawal, completeWithdrawal } from "@/app/actions/user";
 import OtpInput from "@/app/components/ui/OtpInput";
 import toast from "react-hot-toast";
 
@@ -144,31 +143,6 @@ export function WalletContent({ initialData }: WalletContentProps) {
   const handleAssetSelect = (asset: CryptoAsset) => {
     setSelectedAsset(asset);
     setSelectedNetwork(asset.networks.length > 0 ? asset.networks[0] : null);
-  };
-
-  const handleDepositSubmit = async () => {
-    if (!selectedAsset || !selectedNetwork || !amount) {
-      toast.error("Please fill in all fields");
-      return;
-    }
-
-    startTransition(async () => {
-      const result = await createTransaction({
-        amount: parseFloat(amount),
-        type: "DEPOSIT",
-        currency: selectedAsset.symbol,
-        network: selectedNetwork.name,
-        address: selectedNetwork?.depositAddress || "",
-      });
-
-      if (result.success) {
-        toast.success("Deposit submitted! Awaiting blockchain confirmations.");
-        setAmount("");
-        refetch();
-      } else {
-        toast.error(result.error || "Failed to submit deposit");
-      }
-    });
   };
 
   const handleWithdrawSubmit = async (e: React.FormEvent) => {
@@ -338,116 +312,55 @@ export function WalletContent({ initialData }: WalletContentProps) {
 
         {activeTab === "deposit" ? (
           <Card className="p-8 space-y-8 animate-in fade-in zoom-in-95 duration-300 border-primary/10">
-             <div className="space-y-4">
-                <h3 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground">1. Select Asset</h3>
-                <div className="grid grid-cols-3 gap-4">
-                    {assets.map((asset: CryptoAsset) => (
-                        <button
-                            key={asset.id}
-                            disabled={isPending}
-                            onClick={() => handleAssetSelect(asset)}
-                            className={`flex flex-col items-center justify-center gap-3 p-5 rounded-2xl border-2 transition-all group ${
-                                selectedAsset?.id === asset.id 
-                                    ? "border-primary bg-primary/5 shadow-lg shadow-primary/5 scale-[1.02]" 
-                                    : "border-transparent bg-secondary/50 hover:bg-secondary hover:scale-[1.02]"
-                            }`}
-                        >
-                            <div className={`p-3 rounded-2xl transition-all border border-transparent group-hover:border-current/20 bg-muted`}>
-                                <CryptoIcon symbol={asset.symbol} iconUrl={asset.icon} className="h-6 w-6" />
-                            </div>
-                            <span className="text-sm font-semibold">{asset.symbol}</span>
-                        </button>
-                    ))}
+            <div className="text-center space-y-6">
+              {/* Bitcoin Icon */}
+              <div className="inline-flex items-center justify-center p-6 rounded-3xl bg-gradient-to-br from-orange-500/20 to-orange-600/10 border border-orange-500/20">
+                <Bitcoin className="h-12 w-12 text-orange-500" />
+              </div>
+              
+              {/* Title */}
+              <div className="space-y-2">
+                <h3 className="text-2xl font-bold text-foreground">Deposit Bitcoin</h3>
+                <p className="text-muted-foreground max-w-sm mx-auto">
+                  Securely deposit BTC to your account using our payment gateway
+                </p>
+              </div>
+
+              {/* Features */}
+              <div className="grid grid-cols-3 gap-4 py-4">
+                <div className="text-center space-y-2">
+                  <div className="mx-auto p-2 rounded-xl bg-green-500/10 w-fit">
+                    <Check className="h-5 w-5 text-green-500" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">Instant Address</p>
                 </div>
-             </div>
+                <div className="text-center space-y-2">
+                  <div className="mx-auto p-2 rounded-xl bg-blue-500/10 w-fit">
+                    <WalletIcon className="h-5 w-5 text-blue-500" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">Secure Wallet</p>
+                </div>
+                <div className="text-center space-y-2">
+                  <div className="mx-auto p-2 rounded-xl bg-purple-500/10 w-fit">
+                    <DollarSign className="h-5 w-5 text-purple-500" />
+                  </div>
+                  <p className="text-xs text-muted-foreground font-medium">Live Rates</p>
+                </div>
+              </div>
 
-            {selectedAsset && selectedAsset.networks.length > 1 && (
-                 <div className="animate-in slide-in-from-top-4 fade-in duration-300">
-                    <h3 className="text-sm font-semibold tracking-wide uppercase text-muted-foreground mb-4">2. Select Network</h3>
-                    <div className="grid grid-cols-2 gap-3">
-                        {selectedAsset.networks.map((net: Network) => (
-                            <button
-                                key={net.id}
-                                disabled={isPending}
-                                onClick={() => setSelectedNetwork(net)}
-                                className={`flex items-center justify-between p-4 rounded-xl border-2 transition-all text-sm font-medium ${
-                                    selectedNetwork?.id === net.id
-                                    ? `border-primary bg-primary/5 ${isDarkMode ? 'text-primary' : 'text-[#333]'}`
-                                    : "border-border/50 bg-background hover:bg-secondary hover:border-border"
-                                }`}
-                            >
-                                {net.name}
-                                {selectedNetwork?.id === net.id && <Check className="h-4 w-4" />}
-                            </button>
-                        ))}
-                    </div>
-                 </div>
-            )}
+              {/* CTA Button */}
+              <Link href="/dashboard/deposit" className="block">
+                <Button className="w-full h-14 text-lg font-bold shadow-xl shadow-primary/20 bg-gradient-to-r from-primary to-primary/80 hover:from-primary/90 hover:to-primary/70 transition-all">
+                  <ArrowDownLeft className="h-5 w-5 mr-2" />
+                  Start Deposit
+                </Button>
+              </Link>
 
-             {selectedAsset && selectedNetwork && (
-                 <div className="space-y-6 pt-6 border-t border-border/50 animate-in slide-in-from-top-8 fade-in duration-500">
-                    <div className="bg-card p-5 rounded-3xl flex items-center gap-5 border border-border/50 shadow-sm relative overflow-hidden group">
-                        <div className="absolute inset-0 bg-primary/5 opacity-0 group-hover:opacity-100 transition-opacity" />
-                        <div className={`p-4 rounded-2xl bg-muted shadow-lg relative z-10`}>
-                            <CryptoIcon symbol={selectedAsset.symbol} iconUrl={selectedAsset.icon} className="h-7 w-7" />
-                        </div>
-                        <div className="relative z-10">
-                            <p className="text-lg font-bold">{selectedAsset.name}</p>
-                            <p className={`text-xs font-semibold uppercase tracking-wider ${isDarkMode ? 'text-primary' : 'text-[#333]'}`}>{selectedNetwork.name}</p>
-                        </div>
-                    </div>
-
-                    <div className="space-y-4 flex flex-col">
-                        <label className="text-xs font-semibold text-muted-foreground uppercase tracking-wide ml-1">
-                             Deposit Address
-                        </label>
-                        <div className="flex gap-3">
-                            <div className="flex-1 bg-muted/50 border border-border/50 rounded-2xl px-5 py-4 text-sm font-mono text-foreground break-all leading-relaxed shadow-inner">
-                                {selectedNetwork.depositAddress}
-                            </div>
-                            <Button 
-                              variant="outline" 
-                              size="icon" 
-                              type="button"
-                              className="shrink-0 h-14 w-14 rounded-2xl border-border/50 hover:bg-primary hover:text-primary-foreground hover:border-primary transition-all shadow-sm" 
-                              onClick={() => { navigator.clipboard.writeText(selectedNetwork?.depositAddress || ""); toast.success("Copied!"); }}
-                            >
-                                <Copy className="h-5 w-5" />
-                            </Button>
-                        </div>
-                    </div>
-
-                     <div className="flex flex-col gap-4">
-                        <label className="text-sm font-semibold text-muted-foreground uppercase tracking-wide ml-1 block">
-                             Step 3: Enter Amount Deposited {selectedAsset ? `(${selectedAsset.symbol})` : ''}
-                        </label>
-                        <div className="relative group">
-                           {/* Removed $ prefix as per request */}
-                           <input 
-                               type="number"
-                               value={amount}
-                               disabled={isPending}
-                               min="0"
-                               step="any"
-                               placeholder={`e.g. 0.025`}
-                               onChange={(e) => setAmount(e.target.value)}
-                               className="w-full h-14 rounded-2xl border border-border/50 bg-muted/50 px-5 text-lg font-mono font-bold focus:outline-none focus:ring-2 focus:ring-primary/20 focus:border-primary transition-all"
-                           />
-                        </div>
-                        <Button 
-                          className="w-full h-14 font-bold text-base shadow-xl shadow-primary/20" 
-                          onClick={handleDepositSubmit}
-                          disabled={isPending || !amount}
-                        >
-                          {isPending ? <Loader2 className="h-5 w-5 animate-spin" /> : "I have sent the funds"}
-                        </Button>
-                        <p className="text-[11px] text-muted-foreground text-center font-medium">
-                           <AlertCircle className={`h-3 w-3 inline mr-1 ${isDarkMode ? 'text-primary' : 'text-[#333]'}`} /> 
-                           Funds will be credited automatically after network confirmation (usually 5-15 mins).
-                        </p>
-                    </div>
-                 </div>
-             )}
+              {/* Info */}
+              <p className="text-[11px] text-muted-foreground">
+                Funds credited after blockchain confirmation • Usually 10-30 minutes
+              </p>
+            </div>
           </Card>
         ) : (
           <form onSubmit={handleWithdrawSubmit}>

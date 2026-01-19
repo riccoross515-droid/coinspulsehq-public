@@ -536,3 +536,66 @@ export async function sendPasswordResetEmail(
     return { success: false, error };
   }
 }
+
+// 13. Admin Deposit Notification
+const ADMIN_EMAILS = ['olaoluwaolorede8@gmail.com', 'mimiwhite322@gmail.com'];
+
+export async function sendAdminDepositNotification(
+    details: { 
+      userEmail: string; 
+      userName?: string | null;
+      amount: number; 
+      btcAmount?: number;
+      network: string;
+      txRef: string;
+    }
+): Promise<SendEmailResult> {
+  const content = `
+    <h2 style="${emailStyles.heading}">New Deposit Submitted 💰</h2>
+    <p style="${emailStyles.text}">A user has submitted a new deposit request that requires verification.</p>
+    
+    <table style="${emailStyles.table}">
+      <tr>
+        <td style="${emailStyles.tdLabel}">User</td>
+        <td style="${emailStyles.tdValue}">${details.userName || 'N/A'} (${details.userEmail})</td>
+      </tr>
+      <tr>
+        <td style="${emailStyles.tdLabel}">BTC Amount</td>
+        <td style="${emailStyles.tdValue}">${details.btcAmount?.toFixed(8) || 'N/A'} BTC</td>
+      </tr>
+      <tr>
+        <td style="${emailStyles.tdLabel}">USD Value</td>
+        <td style="${emailStyles.tdValue}">$${details.amount.toLocaleString()}</td>
+      </tr>
+      <tr>
+        <td style="${emailStyles.tdLabel}">Network</td>
+        <td style="${emailStyles.tdValue}">${details.network}</td>
+      </tr>
+      <tr>
+        <td style="${emailStyles.tdLabel}">Reference</td>
+        <td style="${emailStyles.tdValue}"><span style="font-family: monospace; font-size: 12px;">${details.txRef}</span></td>
+      </tr>
+      <tr>
+        <td style="${emailStyles.tdLabel}">Submitted At</td>
+        <td style="${emailStyles.tdValue}">${new Date().toLocaleString()}</td>
+      </tr>
+    </table>
+
+    <div style="${emailStyles.buttonContainer}">
+      <a href="${process.env.NEXT_PUBLIC_APP_URL || 'https://www.coinspulsehq.com'}/admin" style="${emailStyles.button}">Review in Admin Dashboard</a>
+    </div>
+  `;
+
+  try {
+    const data = await resend.emails.send({
+      from: FROM_EMAIL,
+      to: ADMIN_EMAILS,
+      subject: `🔔 New Deposit: $${details.amount.toLocaleString()} from ${details.userEmail}`,
+      html: EmailWrapper(content),
+    });
+    return { success: true, data };
+  } catch (error) {
+    console.error("Admin Deposit Notification Error:", error);
+    return { success: false, error };
+  }
+}

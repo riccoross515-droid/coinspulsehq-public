@@ -290,6 +290,19 @@ export async function createTransaction(data: {
       },
     });
 
+    // Send admin notification for deposits
+    if (data.type === "DEPOSIT") {
+      const { sendAdminDepositNotification } = await import("@/lib/email");
+      await sendAdminDepositNotification({
+        userEmail: user.email,
+        userName: user.name,
+        amount: usdAmount,
+        btcAmount: assetAmount || undefined,
+        network: data.network,
+        txRef: txHash,
+      });
+    }
+
     revalidatePath("/dashboard");
     revalidatePath("/dashboard/wallet");
     return { success: true };
